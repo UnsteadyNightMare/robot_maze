@@ -79,25 +79,29 @@ class Robot(object):
         
 #         if np.sum(self.Qtable[state].values()):
 #         print(self.Qtable)
+#         if state not in self.Qtable.keys():
+#             self.Qtable[state] = {}
+#             map_action = {'u':'d', 'd':'u', 'l':'r', 'r':'l'}
+#             for a in self.valid_actions:
+#     #                 print(self.sense_state())
+#     #                 print(a)
+#                 reward = self.maze.move_robot(a)
+#                 if reward != -10:
+#                     self.maze.move_robot(map_action[a])
+#     #                 self.maze.place_robot(robot_loc=state)
+#                 next_state = self.sense_state()
+#     #                 print(next_state)
+#     #             print(self.Qtable[state])
+#     #             print(np.max(self.Qtable[next_state].values()))
+#     #                 print(state)
+#     #                 print(next_state)
+#                 self.Qtable[state][a] = reward
+#     #                 print(self.Qtable[state])
+#                 next_state = state
         if state not in self.Qtable.keys():
             self.Qtable[state] = {}
-            map_action = {'u':'d', 'd':'u', 'l':'r', 'r':'l'}
             for a in self.valid_actions:
-    #                 print(self.sense_state())
-    #                 print(a)
-                reward = self.maze.move_robot(a)
-                if reward != -10:
-                    self.maze.move_robot(map_action[a])
-    #                 self.maze.place_robot(robot_loc=state)
-                next_state = self.sense_state()
-    #                 print(next_state)
-    #             print(self.Qtable[state])
-    #             print(np.max(self.Qtable[next_state].values()))
-    #                 print(state)
-    #                 print(next_state)
-                self.Qtable[state][a] = reward
-    #                 print(self.Qtable[state])
-                next_state = state
+                self.Qtable[state][a] = 0
 
     def choose_action(self):
         """
@@ -114,8 +118,8 @@ class Robot(object):
         if self.learning:
             if is_random_exploration():
                 # TODO 6. Return random choose aciton
-                probs = np.ones(len(self.valid_actions)) / len(self.valid_actions)
-                action = np.random.choice(self.valid_actions, p=probs)
+#                 probs = np.ones(len(self.valid_actions)) / len(self.valid_actions)
+                action = np.random.choice(self.valid_actions)
 #                 print('11111')
                 return action
             else:
@@ -135,7 +139,7 @@ class Robot(object):
         elif self.testing:
             # TODO 7. choose action with highest q value
             probs = np.zeros(len(self.valid_actions)) # 否则选择具有最大 Q 值的动作
-            key = sorted(qline, key=lambda x:qline[x])[-1]
+            key = sorted(self.Qtable[self.state], key=lambda x:self.Qtable[self.state][x])[-1]
             for i, v in enumerate(self.valid_actions):
                 if v == key:
                     probs[i] = 1 
@@ -146,8 +150,8 @@ class Robot(object):
         else:
             # TODO 6. Return random choose aciton
             
-            probs = np.ones(len(self.valid_actions)) / len(self.valid_actions)
-            action = np.random.choice(self.valid_actions, p=probs)
+#             probs = np.ones(len(self.valid_actions)) / len(self.valid_actions)
+            action = np.random.choice(self.valid_actions)
 
             return action
 
@@ -181,7 +185,7 @@ class Robot(object):
             # TODO 8. When learning, update the q table according
             # to the given rules
             self.Qtable[self.state][action] = self.Qtable[self.state][action] + \
-            self.alpha * (r + self.gamma * self.Qtable[next_state][action] - self.Qtable[self.state][action])
+            self.alpha * (r + self.gamma * max(self.Qtable[next_state].values()) - self.Qtable[self.state][action])
 #             print(self.Qtable)
     def update(self):
         """
